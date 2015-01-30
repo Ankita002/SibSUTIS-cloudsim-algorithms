@@ -18,7 +18,6 @@ public class VmAllocationPolicyNBG extends VmAllocationPolicy {
 
     /** The vm table. */
     private Map<String, Host> vmTable;
-    int lastAllocatedHost;
 
 
 
@@ -31,7 +30,6 @@ public class VmAllocationPolicyNBG extends VmAllocationPolicy {
      */
     public VmAllocationPolicyNBG(List<? extends Host> list) {
         super(list);
-        lastAllocatedHost = -1; //We want to start from 0 idx
         setVmTable(new HashMap<String, Host>());
     }
 
@@ -104,9 +102,14 @@ public class VmAllocationPolicyNBG extends VmAllocationPolicy {
 
         }
         Double norm = normalizedHosts.firstElement().getValue();
+        ExtendedHost host = normalizedHosts.firstElement().getKey();
+        printLogMsg("Allocate on host with CPU: "+host.getNumberOfFreePes() +
+                " RAM: "+host.getRamProvisioner().getAvailableRam() +
+                " HDD: "+host.getStorage());
         printLogMsg("Allocate vm on host with norm: "+norm);
 
         normalizedHosts.firstElement().getKey().vmCreate(vm);
+        getVmTable().put(vm.getUid(), host);
         return true;
     }
 
