@@ -18,34 +18,16 @@ public class VmAllocationPolicyNBG extends VmAllocationPolicy {
 
     /** The vm table. */
     private Map<String, Host> vmTable;
-
-
-
-    /**
-     * Creates the new VmAllocationRoundRobin object.
-     *
-     * @param list the list
-     * @pre $none
-     * @post $none
-     */
     public VmAllocationPolicyNBG(List<? extends Host> list) {
         super(list);
         setVmTable(new HashMap<String, Host>());
     }
 
-    /**
-     * Sets the vm table.
-     *
-     * @param vmTable the vm table
-     */
+
     protected void setVmTable(Map<String, Host> vmTable) {
         this.vmTable = vmTable;
     }
-    /**
-     * Gets the vm table.
-     *
-     * @return the vm table
-     */
+
     public Map<String, Host> getVmTable() {
         return vmTable;
     }
@@ -116,8 +98,7 @@ public class VmAllocationPolicyNBG extends VmAllocationPolicy {
     @Override
     public boolean allocateHostForVm(Vm vm, Host host) {
         //Do not even try to do this!
-//        throw new RuntimeException("Not implemented!", null);
-        return false;
+        throw new RuntimeException("Not implemented!", null);
     }
 
     @Override

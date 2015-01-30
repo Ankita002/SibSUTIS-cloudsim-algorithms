@@ -21,15 +21,15 @@ import org.cloudbus.cloudsim.examples.power.random.RandomHelper;
 import org.cloudbus.cloudsim.power.*;
 
 
-/**
- * A simple example showing how to create
- * a datacenter with two hosts and run two
- * cloudlets on it. The cloudlets run in
- * VMs with different MIPS requirements.
- * The cloudlets will take different time
- * to complete the execution depending on
- * the requested VM performance.
- */
+/*TODO
+1.Random
+2.First FIt
+3.Round RObin
+4. FFD Prod
+5. FFD Sum
+6. Dot-Product
+7. Norm-based Greedy
+*/
 public class SimulationRunner {
 
     public static void main(String[] args) throws IOException {
