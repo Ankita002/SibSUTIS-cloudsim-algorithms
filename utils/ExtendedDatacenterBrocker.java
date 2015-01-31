@@ -36,6 +36,10 @@ public class ExtendedDatacenterBrocker extends PowerDatacenterBroker {
             if (vmsToAllocate.size() > 0) {
                 Log.printLine("Extended brocker: send msg with vms to allocate: "+vmsToAllocate.size());
                 sendNow(datacenterId, ALLOCATE_VM_LIST_TAG, vmsToAllocate);
+                getDatacenterRequestedIdsList().add(datacenterId);
+
+                setVmsRequested(vmsToAllocate.size());
+                setVmsAcks(0);
             }
         } else {
             super.createVmsInDatacenter(datacenterId);

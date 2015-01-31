@@ -5,8 +5,7 @@ import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
-import org.cloudbus.cloudsim.examples.SibSUTIS.utils.CharacteristicsVector;
-import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedHost;
+
 
 import java.util.*;
 
