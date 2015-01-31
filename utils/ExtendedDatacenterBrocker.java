@@ -1,33 +1,31 @@
 package org.cloudbus.cloudsim.examples.SibSUTIS.utils;
 
-import org.cloudbus.cloudsim.DatacenterBroker;
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
-import org.cloudbus.cloudsim.core.CloudSimTags;
-import org.cloudbus.cloudsim.core.SimEvent;
-import org.cloudbus.cloudsim.lists.VmList;
+import org.cloudbus.cloudsim.power.PowerDatacenterBroker;
 
-import java.rmi.dgc.VMID;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class ExtendedDetecenterBrocker extends DatacenterBroker {
+public class ExtendedDatacenterBrocker extends PowerDatacenterBroker {
     public static final int VM_ALLOCATION_MODE_STANDART = 0;
     public static final int VM_ALLOCATION_MODE_LIST = 1;
 
     public static final int ALLOCATE_VM_LIST_TAG = 900;
     private int vmAllocationMode_;
-    public ExtendedDetecenterBrocker(String name) throws Exception {
+    public ExtendedDatacenterBrocker(String name) throws Exception {
         super(name);
         vmAllocationMode_ = VM_ALLOCATION_MODE_STANDART;
     }
-    public ExtendedDetecenterBrocker(String name, int vmAllocationMode) throws Exception {
+    public ExtendedDatacenterBrocker(String name, int vmAllocationMode) throws Exception {
         super(name);
         this.vmAllocationMode_ = vmAllocationMode;
     }
 
     @Override
     protected void createVmsInDatacenter(int datacenterId) {
+        Log.printLine("Extended brocker: try to allocate vms for datacenter: "+datacenterId);
         if (vmAllocationMode_ == VM_ALLOCATION_MODE_LIST) {
             List<Vm> vmsToAllocate = new ArrayList<Vm>();
             for (Vm vm: getVmList()){
@@ -36,10 +34,12 @@ public class ExtendedDetecenterBrocker extends DatacenterBroker {
                 }
             }
             if (vmsToAllocate.size() > 0) {
+                Log.printLine("Extended brocker: send msg with vms to allocate: "+vmsToAllocate.size());
                 sendNow(datacenterId, ALLOCATE_VM_LIST_TAG, vmsToAllocate);
             }
         } else {
             super.createVmsInDatacenter(datacenterId);
         }
     }
+
 }

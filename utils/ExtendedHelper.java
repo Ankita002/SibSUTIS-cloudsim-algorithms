@@ -3,7 +3,6 @@ package org.cloudbus.cloudsim.examples.SibSUTIS.utils;
 import org.cloudbus.cloudsim.Pe;
 import org.cloudbus.cloudsim.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.examples.power.Constants;
-import org.cloudbus.cloudsim.examples.power.Helper;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
@@ -37,4 +36,16 @@ public class ExtendedHelper extends org.cloudbus.cloudsim.examples.power.Helper 
         }
         return hostList;
     }
+    public static ExtendedDatacenterBrocker createExtendedBrocker(int vmAllocationMode) {
+        ExtendedDatacenterBrocker broker = null;
+        try {
+            broker = new ExtendedDatacenterBrocker("Broker",vmAllocationMode);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+        return broker;
+    }
+
+
 }

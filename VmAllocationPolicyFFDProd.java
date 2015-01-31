@@ -30,11 +30,20 @@ public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements Lis
         return vmTable;
     }
     private void printLogMsg(String msg) {
-        Log.print("NBG_Allocator: " + msg + "\n");
+        Log.print("FFDProd_Allocator: " + msg + "\n");
     }
 
-    private double calculateWeightForVmOnHost(Vm vm, ExtendedHost host, CharacteristicsVector alphaVector) {
-       return 0.0d;
+    private Vector<Pair<Vm,Double>> calculateWeightsForVms(List<Vm> vmList) {
+        Vector<Pair<Vm,Double>> vector = new Vector<Pair<Vm, Double>>(vmList.size());
+        Double weight;
+        for(Vm vm: vmList) {
+            weight = 1.0d*vm.getNumberOfPes();
+            weight *= vm.getSize();
+            weight *= vm.getRam();
+            vector.add(new Pair<Vm, Double>(vm,weight));
+
+        }
+        return vector;
     }
 
     @Override
@@ -45,7 +54,52 @@ public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements Lis
 
     @Override
     public boolean allocateHostForVmList(List<Vm> vmsToAllocate) {
-        return false;
+        //Bin-centric
+
+        printLogMsg("Allocate host for vmList: "+vmsToAllocate.size());
+
+        Vector<Pair<Vm, Double>> vmsVector = calculateWeightsForVms(vmsToAllocate);
+        Collections.sort(vmsVector, new Comparator<Pair<Vm, Double>>() {
+            @Override
+            public int compare(Pair<Vm, Double> o1, Pair<Vm, Double> o2) {
+                return (int)(o1.getValue() - o2.getValue());
+            }
+        });
+        Collections.reverse(vmsVector);
+        long iterationCount = 0;
+        long iterationThreshold = getHostList().size() * vmsVector.size();
+        for (Host host: getHostList()) {
+            //All items allocated
+            printLogMsg("Look at host: "+host.getId());
+            if(vmsVector.size() <= 0) {
+                printLogMsg("We're allocate all requested vms");
+                break;
+            }
+            //first item is largest
+            for (int i = 0; i < vmsVector.size(); i++) {
+                //I want to avoid cycling
+                iterationCount++;
+                assert(iterationCount<=iterationThreshold);
+                Vm vm = vmsVector.get(i).getKey();
+                if (host.isSuitableForVm(vm)) {
+                    host.vmCreate(vm);
+                    getVmTable().put(vm.getUid(), host);
+                    vmsVector.remove(i);
+                    printLogMsg("Allocate vm: "+vm.getId() + " on host: "+host.getId());
+                    i = 0;
+                    continue;
+                }
+            }
+
+        }
+        if(vmsVector.size() == 0) {
+            printLogMsg("All vms successfully allocated!");
+            return true;
+        } else {
+            //TODO: deallocate vms
+            printLogMsg("ERROR! Vms doesn't allocated");
+            return false;
+        }
     }
 
     @Override

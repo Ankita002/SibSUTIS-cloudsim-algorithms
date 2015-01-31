@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedDatacenter;
+import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedDatacenterBrocker;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedHelper;
 import org.cloudbus.cloudsim.examples.power.Constants;
 import org.cloudbus.cloudsim.examples.power.random.RandomHelper;
@@ -34,7 +36,7 @@ public class SimulationRunner {
 
     public static void main(String[] args) throws IOException {
         int NUMBER_OF_VMS = 20;
-        int NUMBER_OF_HOSTS = 10;
+        int NUMBER_OF_HOSTS = 20;
         String experimentName = "random_npa";
         String outputFolder = "output";
 
@@ -44,8 +46,9 @@ public class SimulationRunner {
         try {
             CloudSim.init(1, Calendar.getInstance(), false);
 
-            DatacenterBroker broker =  ExtendedHelper.createBroker();
+            ExtendedDatacenterBrocker broker =  ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_LIST);
             int brokerId = broker.getId();
+            Log.printLine("brocker id: "+brokerId);
 
             List<Cloudlet> cloudletList = RandomHelper.createCloudletList(
                     brokerId,
@@ -54,12 +57,13 @@ public class SimulationRunner {
             List<PowerHost> hostList = ExtendedHelper.createHostList(NUMBER_OF_HOSTS);
             PowerDatacenter datacenter = (PowerDatacenter) ExtendedHelper.createDatacenter(
                     "Datacenter",
-                    PowerDatacenter.class,
+                    ExtendedDatacenter.class,
                     hostList,
 //                    new VmAllocationPolicyRandom(hostList)
 //                    new VmAllocationPolicyRoundRobin(hostList)
 //                    new VmAllocationPolicyFirstFit(hostList)
-                    new VmAllocationPolicyNBG(hostList)
+//                    new VmAllocationPolicyNBG(hostList)
+                    new VmAllocationPolicyFFDProd(hostList)
             );
 
             datacenter.setDisableMigrations(false);
