@@ -63,7 +63,8 @@ public class SimulationRunner {
 //                    new VmAllocationPolicyRoundRobin(hostList)
 //                    new VmAllocationPolicyFirstFit(hostList)
 //                    new VmAllocationPolicyNBG(hostList)
-                    new VmAllocationPolicyFFDProd(hostList)
+//                    new VmAllocationPolicyFFDProd(hostList)
+                    new VmAllocationPolicyFFDSum(hostList)
             );
 
             datacenter.setDisableMigrations(false);

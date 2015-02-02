@@ -4,7 +4,7 @@ package org.cloudbus.cloudsim.examples.SibSUTIS.utils;
  * Created by andrey on 30.01.15.
  */
 public class CharacteristicsVector {
-    public CharacteristicsVector(int cpu, int ram, int hdd) {
+    public CharacteristicsVector(double cpu, double ram, double hdd) {
         this.cpu = cpu;
         this.ram = ram;
         this.hdd = hdd;
