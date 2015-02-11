@@ -46,7 +46,8 @@ public class SimulationRunner {
         try {
             CloudSim.init(1, Calendar.getInstance(), false);
 
-            ExtendedDatacenterBrocker broker =  ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_LIST);
+//            ExtendedDatacenterBrocker broker =  ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_LIST);
+            ExtendedDatacenterBrocker broker =  ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_STANDART);
             int brokerId = broker.getId();
             Log.printLine("brocker id: "+brokerId);
 
@@ -64,7 +65,8 @@ public class SimulationRunner {
 //                    new VmAllocationPolicyFirstFit(hostList)
 //                    new VmAllocationPolicyNBG(hostList)
 //                    new VmAllocationPolicyFFDProd(hostList)
-                    new VmAllocationPolicyFFDSum(hostList)
+//                    new VmAllocationPolicyFFDSum(hostList)
+                    new VmAllocationPolicyDotProduct(hostList)
             );
 
             datacenter.setDisableMigrations(false);

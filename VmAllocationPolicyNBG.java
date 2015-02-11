@@ -64,7 +64,7 @@ public class VmAllocationPolicyNBG extends VmAllocationPolicy {
         Vector<Pair<ExtendedHost, Double>> normalizedHosts = new Vector<Pair<ExtendedHost, Double>>();
         CharacteristicsVector alphaVector = new CharacteristicsVector(1,1,1);
         for (Host host: getHostList()) {
-            printLogMsg("Host class: "+host.getClass().toString());
+            printLogMsg("Host class: " + host.getClass().toString());
             Pair<ExtendedHost, Double> norm = new Pair<ExtendedHost, Double>((ExtendedHost)host, calculateNormForVmOnHost(vm,
                     (ExtendedHost)host,alphaVector));
             if (norm.getValue() > 0) {
