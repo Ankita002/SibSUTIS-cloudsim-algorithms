@@ -8,7 +8,11 @@ import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.CharacteristicsVector;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedHost;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by andrey on 1/8/15.
@@ -18,6 +22,7 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
 
     /** The vm table. */
     private Map<String, Host> vmTable;
+    Logger logger;
     public VmAllocationPolicyDotProduct(List<? extends Host> list) {
         super(list);
         setVmTable(new HashMap<String, Host>());
@@ -32,7 +37,22 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
         return vmTable;
     }
     private void printLogMsg(String msg) {
-        Log.print("Dot_Prod_Allocator: " + msg + "\n");
+        if (logger == null) {
+            logger = Logger.getLogger("DotProdLog");
+            FileHandler fh;
+
+            try {
+                fh = new FileHandler("/tmp/dot_prod_allocator.log");
+                logger.addHandler(fh);
+                SimpleFormatter formatter = new SimpleFormatter();
+                fh.setFormatter(formatter);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        logger.info("Dot_Prod_Allocator: " + msg + "\n");
     }
 
     private double calculateDotProdForVmOnHost(Vm vm, ExtendedHost host, CharacteristicsVector alphaVector) {
@@ -51,8 +71,8 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
         hostVector.cpu = 1.0d*host.getNumberOfFreePes()/host.getNumberOfPes();
         hostVector.ram = 1.0d*host.getRamProvisioner().getAvailableRam() / host.getRam();
         hostVector.hdd = 1.0d*host.getStorage() /host.getInitialStorage();
-        printLogMsg("VM_VECTOR: "+vmVector.toString());
-        printLogMsg("HOST_VECTOR: "+hostVector.toString());
+//        printLogMsg("VM_VECTOR: "+vmVector.toString());
+//        printLogMsg("HOST_VECTOR: "+hostVector.toString());
         dotprod = vmVector.cpu * hostVector.cpu;
         dotprod += vmVector.ram * hostVector.ram;
         dotprod += vmVector.hdd * hostVector.hdd;
@@ -84,7 +104,7 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
                 dotProds.add(dotProd);
             }
         }
-        if (dotProds.size() > 0) {
+        if (!dotProds.isEmpty()) {
             Collections.sort(dotProds, new Comparator<Pair<ExtendedHost, Double>>() {
                 @Override
                 public int compare(Pair<ExtendedHost, Double> o1, Pair<ExtendedHost, Double> o2) {
@@ -96,12 +116,12 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
                 return false;
 
             }
-            Double norm = dotProds.firstElement().getValue();
+            Double dotProd = dotProds.firstElement().getValue();
             ExtendedHost host = dotProds.firstElement().getKey();
-            printLogMsg("Allocate on host with CPU: " + host.getNumberOfFreePes() +
+            printLogMsg("Allocate on host: " + host.getId() + "with CPU: " + host.getNumberOfFreePes() +
                     " RAM: " + host.getRamProvisioner().getAvailableRam() +
                     " HDD: " + host.getStorage());
-            printLogMsg("Allocate vm on host with norm: " + norm);
+            printLogMsg("Allocate vm on host with dotProd: " + dotProd);
 
             dotProds.firstElement().getKey().vmCreate(vm);
             getVmTable().put(vm.getUid(), host);
@@ -109,19 +129,26 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
         }
         if(!unusedHostList.isEmpty()) {
             //Only suitable vms in this list
-            Collections.sort(unusedHostList, new Comparator<Host>() {
-                @Override
-                public int compare(Host o1, Host o2) {
-                    return (int) (((ExtendedHost)o1).getMaxPower() -((ExtendedHost)o2).getMaxPower() );
-                }
-            });
-            printLogMsg("Turning on new host: "+unusedHostList.get(0).getId());
+//            Collections.sort(unusedHostList, new Comparator<Host>() {
+//                @Override
+//                public int compare(Host o1, Host o2) {
+//                    return (int) (((ExtendedHost)o1).getMaxPower() -((ExtendedHost)o2).getMaxPower() );
+//                }
+//            });
+            ExtendedHost host = (ExtendedHost)unusedHostList.get(0);
+            printLogMsg("Turning on new host: "+host.getId());
+            printLogMsg("Allocate on host: " + host.getId() +
+                    "with CPU: " + host.getNumberOfFreePes() +
+                    " RAM: " + host.getRamProvisioner().getAvailableRam() +
+                    " HDD: " + host.getStorage());
             //Allocate vm on host with lowest power consumption.
-            unusedHostList.get(0).vmCreate(vm);
-            getVmTable().put(vm.getUid(), unusedHostList.get(0));
+            host.vmCreate(vm);
+            getVmTable().put(vm.getUid(), host);
             return true;
         }
-        return false;
+        printLogMsg("ERROR! Cannot allocate vm");
+        throw new RuntimeException();
+//        return false;
     }
 
     @Override

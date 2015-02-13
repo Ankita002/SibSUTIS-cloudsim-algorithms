@@ -35,8 +35,8 @@ import org.cloudbus.cloudsim.power.*;
 public class SimulationRunner {
 
     public static void main(String[] args) throws IOException {
-        int NUMBER_OF_VMS = 20;
-        int NUMBER_OF_HOSTS = 20;
+        int NUMBER_OF_VMS = 700;
+        int NUMBER_OF_HOSTS = 700;
         String experimentName = "random_npa";
         String outputFolder = "output";
 

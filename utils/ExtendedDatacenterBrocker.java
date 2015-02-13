@@ -4,8 +4,12 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.power.PowerDatacenterBroker;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 
 public class ExtendedDatacenterBrocker extends PowerDatacenterBroker {
@@ -14,6 +18,25 @@ public class ExtendedDatacenterBrocker extends PowerDatacenterBroker {
 
     public static final int ALLOCATE_VM_LIST_TAG = 900;
     private int vmAllocationMode_;
+    Logger logger;
+    private void printLogMsg(String msg) {
+        if (logger == null) {
+            logger = Logger.getLogger("ExtendedBrockerLog");
+            FileHandler fh;
+
+            try {
+                fh = new FileHandler("/tmp/extended_brocker.log");
+                logger.addHandler(fh);
+                SimpleFormatter formatter = new SimpleFormatter();
+                fh.setFormatter(formatter);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        logger.info("Extended_brocker: " + msg + "\n");
+    }
     public ExtendedDatacenterBrocker(String name) throws Exception {
         super(name);
         vmAllocationMode_ = VM_ALLOCATION_MODE_STANDART;
@@ -25,7 +48,8 @@ public class ExtendedDatacenterBrocker extends PowerDatacenterBroker {
 
     @Override
     protected void createVmsInDatacenter(int datacenterId) {
-        Log.printLine("Extended brocker: try to allocate vms for datacenter: "+datacenterId);
+        printLogMsg("Extended brocker: try to allocate vms for datacenter: "+datacenterId);
+        printLogMsg("Trying to allocate: "+getVmList().size()+" vms");
         if (vmAllocationMode_ == VM_ALLOCATION_MODE_LIST) {
             List<Vm> vmsToAllocate = new ArrayList<Vm>();
             for (Vm vm: getVmList()){
@@ -37,7 +61,6 @@ public class ExtendedDatacenterBrocker extends PowerDatacenterBroker {
                 Log.printLine("Extended brocker: send msg with vms to allocate: "+vmsToAllocate.size());
                 sendNow(datacenterId, ALLOCATE_VM_LIST_TAG, vmsToAllocate);
                 getDatacenterRequestedIdsList().add(datacenterId);
-
                 setVmsRequested(vmsToAllocate.size());
                 setVmsAcks(0);
             }
