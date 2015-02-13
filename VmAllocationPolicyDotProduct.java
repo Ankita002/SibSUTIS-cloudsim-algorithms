@@ -142,7 +142,9 @@ public class VmAllocationPolicyDotProduct extends VmAllocationPolicy {
                     " RAM: " + host.getRamProvisioner().getAvailableRam() +
                     " HDD: " + host.getStorage());
             //Allocate vm on host with lowest power consumption.
-            host.vmCreate(vm);
+            boolean res = host.vmCreate(vm);
+            if (!res)
+                throw new RuntimeException("No way!");
             getVmTable().put(vm.getUid(), host);
             return true;
         }
