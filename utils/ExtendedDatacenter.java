@@ -16,6 +16,11 @@ import java.util.logging.SimpleFormatter;
 
 public class ExtendedDatacenter extends PowerDatacenter {
     Logger logger;
+    private int maximumUsedHostsCount = 0;
+
+    public int getMaximumUsedHostsCount() {
+        return maximumUsedHostsCount;
+    }
     private void printLogMsg(String msg) {
         if (logger == null) {
             logger = Logger.getLogger("ExtendedDatacenterLog");
@@ -69,13 +74,20 @@ public class ExtendedDatacenter extends PowerDatacenter {
                             .getAllocatedMipsForVm(vm));
                 }
             }
-            printLogMsg("Used hosts: "+ (getHostList().size() - getUnusedHostsCount()));
-        } else {
-            if (ev.getTag() == CloudSimTags.VM_CREATE_ACK){
-                printLogMsg("Used hosts: "+ (getHostList().size() - getUnusedHostsCount()));
+            int used = getHostList().size() - getUnusedHostsCount();
+            if (used > maximumUsedHostsCount) {
+                maximumUsedHostsCount = used;
             }
+            printLogMsg("Used hosts: "+ used);
+        } else {
             super.processEvent(ev);
+            int used = getHostList().size() - getUnusedHostsCount();
+            if (used > maximumUsedHostsCount) {
+                maximumUsedHostsCount = used;
+            }
+            printLogMsg("Used hosts: "+ used);
         }
+
     }
     int getUnusedHostsCount() {
         int count = 0;

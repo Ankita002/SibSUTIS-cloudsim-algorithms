@@ -66,7 +66,4 @@ public class ExtendedHelper extends org.cloudbus.cloudsim.examples.power.Helper 
         }
         return vms;
     }
-
-
-
 }

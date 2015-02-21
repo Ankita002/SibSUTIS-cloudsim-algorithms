@@ -14,6 +14,7 @@ import java.util.List;
 
 public class ExtendedHost extends PowerHostUtilizationHistory {
     private long initialStorage;
+    private static final boolean isVmOwnsPes = false;
     public ExtendedHost(int id,
                         RamProvisioner ramProvisioner,
                         BwProvisioner bwProvisioner,
@@ -67,15 +68,17 @@ public class ExtendedHost extends PowerHostUtilizationHistory {
             getBwProvisioner().deallocateBwForVm(vm);
             return false;
         }
-        int pesToAllocate = vm.getNumberOfPes();
-        for (int i =0; (i<getNumberOfPes()) && (pesToAllocate >0); i++) {
-            if(getPeList().get(i).getStatus() == Pe.FREE) {
-                getPeList().get(i).setStatus(Pe.BUSY);
-                pesToAllocate--;
+        if (isVmOwnsPes) {
+            int pesToAllocate = vm.getNumberOfPes();
+            for (int i = 0; (i < getNumberOfPes()) && (pesToAllocate > 0); i++) {
+                if (getPeList().get(i).getStatus() == Pe.FREE) {
+                    getPeList().get(i).setStatus(Pe.BUSY);
+                    pesToAllocate--;
+                }
             }
-        }
-        if(pesToAllocate != 0) {
-            throw new RuntimeException("Cannot allocate enough PEs");
+            if (pesToAllocate != 0) {
+                throw new RuntimeException("Cannot allocate enough PEs");
+            }
         }
         setStorage(getStorage() - vm.getSize());
         getVmList().add(vm);
@@ -89,11 +92,13 @@ public class ExtendedHost extends PowerHostUtilizationHistory {
             vmDeallocate(vm);
             getVmList().remove(vm);
             vm.setHost(null);
-            int pesToDeAllocate = vm.getNumberOfPes();
-            for (int i =0; (i<getNumberOfPes()) && (pesToDeAllocate >0); i++) {
-                if(getPeList().get(i).getStatus() == Pe.BUSY) {
-                    getPeList().get(i).setStatus(Pe.FREE);
-                    pesToDeAllocate--;
+            if (isVmOwnsPes) {
+                int pesToDeAllocate = vm.getNumberOfPes();
+                for (int i = 0; (i < getNumberOfPes()) && (pesToDeAllocate > 0); i++) {
+                    if (getPeList().get(i).getStatus() == Pe.BUSY) {
+                        getPeList().get(i).setStatus(Pe.FREE);
+                        pesToDeAllocate--;
+                    }
                 }
             }
         }
