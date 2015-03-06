@@ -20,6 +20,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedDatacenter;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedDatacenterBrocker;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedHelper;
+import org.cloudbus.cloudsim.examples.SibSUTIS.utils.MojosHelper;
 import org.cloudbus.cloudsim.examples.power.Constants;
 import org.cloudbus.cloudsim.examples.power.random.RandomHelper;
 import org.cloudbus.cloudsim.power.*;
@@ -42,6 +43,7 @@ public class SimulationRunner {
         int MIN_VMS = 100;
         int SIMULATION_STEP = 100;
         int MAX_VMS = 1000;
+
         List<Pair<Double, Integer>> resultList = new ArrayList<Pair<Double, Integer>>();
         for (int i = MIN_VMS; i <= MAX_VMS; i += SIMULATION_STEP) {
             String experimentName = "random_npa";
@@ -63,7 +65,9 @@ public class SimulationRunner {
                 List<Cloudlet> cloudletList = RandomHelper.createCloudletList(
                         brokerId,
                         NUMBER_OF_VMS);
-                List<Vm> vmList = ExtendedHelper.createVmList(brokerId, cloudletList.size());
+
+//                List<Vm> vmList = ExtendedHelper.createVmList(brokerId, cloudletList.size());
+                List<Vm> vmList = MojosHelper.createVmList(brokerId, cloudletList.size());
                 List<PowerHost> hostList = ExtendedHelper.createHostList(NUMBER_OF_HOSTS);
                 ExtendedDatacenter datacenter = (ExtendedDatacenter) ExtendedHelper.createDatacenter(
                         "Datacenter",
