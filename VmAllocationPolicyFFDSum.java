@@ -36,8 +36,8 @@ public class VmAllocationPolicyFFDSum extends VmAllocationPolicy implements List
         Double weight;
         for(Vm vm: vmList) {
             weight = 1.0d*vm.getNumberOfPes()*coefficients.cpu;
-            weight *= vm.getSize()*coefficients.hdd;
-            weight *= vm.getRam()*coefficients.ram;
+            weight += vm.getSize()*coefficients.hdd;
+            weight += vm.getRam()*coefficients.ram;
             vector.add(new Pair<Vm, Double>(vm,weight));
 
         }
