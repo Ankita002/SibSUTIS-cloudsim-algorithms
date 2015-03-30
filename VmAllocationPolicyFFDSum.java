@@ -53,7 +53,7 @@ public class VmAllocationPolicyFFDSum extends VmAllocationPolicy implements List
         CharacteristicsVector vector = new CharacteristicsVector(0.0d,0.0d,0.0d);
         for (Vm vm:vmList) {
 //            printLogMsg("vm: "+vm.getNumberOfPes() + " : "+vm.getRam() + " : " + vm.getSize());
-            vector.cpu += 1.0d*vm.getNumberOfPes() / vm.getRam();
+            vector.cpu += 1.0d*vm.getNumberOfPes() / host.getRam();
             vector.ram += 1.0d*vm.getRam() / host.getRam();
             vector.hdd += 1.0d*vm.getSize() / host.getInitialStorage();
         }
