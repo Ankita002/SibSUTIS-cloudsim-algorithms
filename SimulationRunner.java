@@ -82,7 +82,7 @@ public class SimulationRunner {
 //                        new VmAllocationPolicyDotProduct(hostList)
                 );
 
-                datacenter.setDisableMigrations(false);
+                datacenter.setDisableMigrations(true);
 
                 broker.submitVmList(vmList);
                 broker.submitCloudletList(cloudletList);
