@@ -21,6 +21,7 @@ import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedDatacenter;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedDatacenterBrocker;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.ExtendedHelper;
 import org.cloudbus.cloudsim.examples.SibSUTIS.utils.MojosHelper;
+import org.cloudbus.cloudsim.examples.SibSUTIS.vmAllocationPolicyes.VmAllocationPolicyFirstFit;
 import org.cloudbus.cloudsim.examples.power.Constants;
 import org.cloudbus.cloudsim.examples.power.random.RandomHelper;
 import org.cloudbus.cloudsim.power.*;

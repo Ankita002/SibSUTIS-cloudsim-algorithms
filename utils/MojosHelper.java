@@ -1,6 +1,7 @@
 package org.cloudbus.cloudsim.examples.SibSUTIS.utils;
 
 
+import com.sun.istack.internal.Nullable;
 import org.cloudbus.cloudsim.CloudletSchedulerDynamicWorkload;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
@@ -12,8 +13,8 @@ import java.util.logging.Logger;
 
 public class MojosHelper extends ExtendedHelper {
     public static List<Vm> createVmList(int brokerId, int vmsNumber) {
-        //Do you know better place?
-        List<MojosXmlParser.MojosTask> taskList = MojosXmlParser.parse("/tmp/mojos/test.xml");
+
+        List<MojosXmlParser.MojosTask> taskList = createTaskList(null);
         if (taskList.size() < vmsNumber) {
             throw new RuntimeException("Mojos taskList size less than vms to create!");
         }
@@ -40,6 +41,14 @@ public class MojosHelper extends ExtendedHelper {
                     ExtendedConstants.SCHEDULING_INTERVAL));
         }
         return vms;
+    }
+
+    public static List<MojosXmlParser.MojosTask> createTaskList(@Nullable String path ) {
+        if (path == null) {
+            path = "/tmp/mojos/test.xml";
+        }
+        List<MojosXmlParser.MojosTask> taskList = MojosXmlParser.parse(path);
+        return taskList;
     }
 
 }

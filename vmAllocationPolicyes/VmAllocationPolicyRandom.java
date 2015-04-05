@@ -1,19 +1,16 @@
-package org.cloudbus.cloudsim.examples.SibSUTIS;
+package org.cloudbus.cloudsim.examples.SibSUTIS.vmAllocationPolicyes;
 
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by andrey on 1/8/15.
  */
-public class VmAllocationPolicyRoundRobin extends VmAllocationPolicy {
+public class VmAllocationPolicyRandom extends VmAllocationPolicy {
 
 
     /** The vm table. */
@@ -27,7 +24,7 @@ public class VmAllocationPolicyRoundRobin extends VmAllocationPolicy {
      * @pre $none
      * @post $none
      */
-    public VmAllocationPolicyRoundRobin(List<? extends Host> list) {
+    public VmAllocationPolicyRandom(List<? extends Host> list) {
         super(list);
         lastAllocatedHost = -1; //We want to start from 0 idx
         setVmTable(new HashMap<String, Host>());
@@ -50,7 +47,7 @@ public class VmAllocationPolicyRoundRobin extends VmAllocationPolicy {
         return vmTable;
     }
     private void printLogMsg(String msg) {
-        Log.print("RR_Allocator: " + msg + "\n");
+        Log.print("RAND_Allocator: " + msg + "\n");
     }
     boolean tryToAllocateVmToHost(Host host, Vm vm) {
         if(host.isSuitableForVm(vm)) {
@@ -72,20 +69,23 @@ public class VmAllocationPolicyRoundRobin extends VmAllocationPolicy {
             return tryToAllocateVmToHost(getHostList().get(0),vm);
         }
 
-        int idx = 0;
-        if(lastAllocatedHost != getHostList().size() - 1)
-            idx = lastAllocatedHost + 1;
-        while (idx != lastAllocatedHost) {
-            printLogMsg("Try to allocate vm on: " +idx+ " host");
-            if(tryToAllocateVmToHost(getHostList().get(idx), vm)) {
-                lastAllocatedHost = idx;
+        Random randomGenerator = new Random();
+        int visitedHosts = 0;
+        boolean visited[] = new boolean[getHostList().size()];
+        Arrays.fill(visited,0,getHostList().size(),false);
+        while (visitedHosts < getHostList().size()) {
+            int randomHostNum = randomGenerator.nextInt(getHostList().size());
+            //We don't want to check one host twice
+            if (visited[randomHostNum])
+                continue;
+            printLogMsg("Try to allocate host: "+randomHostNum);
+            boolean res = tryToAllocateVmToHost(getHostList().get(randomHostNum), vm);
+            if(res) {
                 return true;
+            } else {
+                visitedHosts++;
+                visited[randomHostNum] = true;
             }
-
-            if(idx == getHostList().size() - 1)
-                idx = 0;
-            else
-                idx++;
         }
         return false;
     }

@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.examples.SibSUTIS;
+package org.cloudbus.cloudsim.examples.SibSUTIS.vmAllocationPolicyes;
 
 import javafx.util.Pair;
 import org.cloudbus.cloudsim.Host;

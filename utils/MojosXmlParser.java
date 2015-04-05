@@ -20,20 +20,27 @@ import java.util.List;
  * Created by andrey on 04.03.15.
  */
 public class MojosXmlParser {
-    public static class MojosTask {
+    public static class MojosTask implements Comparable<MojosTask> {
         List<MojosRequest> requstList;
         String guid;
-        String arrivalTime;
+        int arrivalTime;
         String contRequests;
         MojosTask() {
             requstList = new ArrayList<MojosRequest>();
+            arrivalTime = -1;
         }
+
+        @Override
+        public int compareTo(MojosTask o) {
+            return arrivalTime - o.arrivalTime;
+        }
+
     }
 
     public static class MojosRequest {
         int vmType;
         int nodes;
-        String time;
+        int time;
         int priority;
 
     }
@@ -69,8 +76,10 @@ public class MojosXmlParser {
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element eElement = (Element) nNode;
                 MojosTask task = new MojosTask();
-                Log.printLine("GUID: " + eElement.getAttribute("GUID"));
                 task.guid = eElement.getAttribute("GUID");
+                task.arrivalTime = Integer.parseInt(eElement.getAttribute("ARRIVALTIME"));
+//                Log.printLine("GUID: " + eElement.getAttribute("GUID"));
+//                Log.printLine("ARRIVAL: " + task.arrivalTime);
                 NodeList requestList = eElement.getElementsByTagName("REQUEST");
 
                 for (int j = 0; j < requestList.getLength(); j++) {
@@ -80,7 +89,7 @@ public class MojosXmlParser {
                         MojosRequest request = new MojosRequest();
                         request.priority = Integer.parseInt(rElement.getAttribute("PRIORITY"));
                         request.nodes = Integer.parseInt(rElement.getAttribute("NODES"));
-                        request.time = rElement.getAttribute("TIME");
+                        request.time = Integer.parseInt(rElement.getAttribute("TIME"));
                         request.vmType = Integer.parseInt(rElement.getAttribute("VM_TYPE"));
                         task.requstList.add(request);
                     }
