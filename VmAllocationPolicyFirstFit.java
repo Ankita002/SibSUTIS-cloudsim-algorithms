@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.examples.SibSUTIS.vmAllocationPolicyes;
+package org.cloudbus.cloudsim.examples.SibSUTIS;
 
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
@@ -13,23 +13,21 @@ import java.util.Map;
 /**
  * Created by andrey on 1/8/15.
  */
-public class VmAllocationPolicyRoundRobin extends VmAllocationPolicy {
+public class VmAllocationPolicyFirstFit extends VmAllocationPolicy {
 
 
     /** The vm table. */
     private Map<String, Host> vmTable;
-    int lastAllocatedHost;
 
     /**
-     * Creates the new VmAllocationRoundRobin object.
+     * Creates the new VmAllocationPolicySimple object.
      *
      * @param list the list
      * @pre $none
      * @post $none
      */
-    public VmAllocationPolicyRoundRobin(List<? extends Host> list) {
+    public VmAllocationPolicyFirstFit(List<? extends Host> list) {
         super(list);
-        lastAllocatedHost = -1; //We want to start from 0 idx
         setVmTable(new HashMap<String, Host>());
     }
 
@@ -50,42 +48,26 @@ public class VmAllocationPolicyRoundRobin extends VmAllocationPolicy {
         return vmTable;
     }
     private void printLogMsg(String msg) {
-        Log.print("RR_Allocator: " + msg + "\n");
+        Log.print("FF_Allocator: " + msg + "\n");
     }
-    boolean tryToAllocateVmToHost(Host host, Vm vm) {
-        if(host.isSuitableForVm(vm)) {
-            boolean result = host.vmCreate(vm);
-            if(result) {
-                printLogMsg("Vm created successfuly");
-                getVmTable().put(vm.getUid(), host);
-                return true;
-            } else {
-                printLogMsg("Vm creation failed");
-            }
-        }
-        return false;
-    }
+
     @Override
     public boolean allocateHostForVm(Vm vm) {
         printLogMsg("Allocate host for vm");
-        if(getHostList().size() == 0) {
-            return tryToAllocateVmToHost(getHostList().get(0),vm);
-        }
-
         int idx = 0;
-        if(lastAllocatedHost != getHostList().size() - 1)
-            idx = lastAllocatedHost + 1;
-        while (idx != lastAllocatedHost) {
-            printLogMsg("Try to allocate vm on: " +idx+ " host");
-            if(tryToAllocateVmToHost(getHostList().get(idx), vm)) {
-                lastAllocatedHost = idx;
-                return true;
+        for (Host host : getHostList()) {
+            idx++;
+            if(host.isSuitableForVm(vm)) {
+                boolean result = host.vmCreate(vm);
+                if(result) {
+                    printLogMsg("Vm created successfuly on " + idx);
+                    getVmTable().put(vm.getUid(), host);
+                    return true;
+                } else {
+                    printLogMsg("Vm creation failed on " + idx + " Lets try another host");
+                    continue;
+                }
             }
-
-            if(idx == getHostList().size() - 1)
-                idx = 0;
-            else
-                idx++;
         }
         return false;
     }

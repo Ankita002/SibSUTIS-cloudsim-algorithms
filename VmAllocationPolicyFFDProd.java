@@ -1,11 +1,10 @@
-package org.cloudbus.cloudsim.examples.SibSUTIS.vmAllocationPolicyes;
+package org.cloudbus.cloudsim.examples.SibSUTIS;
 
 import javafx.util.Pair;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
-import org.cloudbus.cloudsim.examples.SibSUTIS.ListAllocationPolicy;
 
 
 import java.util.*;
@@ -13,7 +12,7 @@ import java.util.*;
 /**
  * Created by andrey on 30.01.15.
  */
-public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements ListAllocationPolicy {
+public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements ListAllocationPolicy{
     /** The vm table. */
     private Map<String, Host> vmTable;
     public VmAllocationPolicyFFDProd(List<? extends Host> list) {
