@@ -112,8 +112,7 @@ public class VmAllocationPolicyFFDSum extends VmAllocationPolicy implements List
                     }
                     vmsVector.remove(i);
                     printLogMsg("Allocate vm: "+vm.getId() + " on host: "+host.getId());
-                    i = 0;
-                    continue;
+                    i -= 1;
                 }
             }
 

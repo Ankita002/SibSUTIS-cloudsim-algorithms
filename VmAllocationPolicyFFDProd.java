@@ -69,7 +69,7 @@ public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements Lis
         long iterationThreshold = getHostList().size() * vmsVector.size();
         for (Host host: getHostList()) {
             //All items allocated
-            printLogMsg("Look at host: "+host.getId());
+            printLogMsg("Look at host: "+host.getId()+"Vms;");
             if(vmsVector.size() <= 0) {
                 printLogMsg("We're allocate all requested vms");
                 break;
@@ -84,12 +84,14 @@ public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements Lis
                     host.vmCreate(vm);
                     getVmTable().put(vm.getUid(), host);
                     vmsVector.remove(i);
-                    printLogMsg("Allocate vm: "+vm.getId() + " on host: "+host.getId());
-                    i = 0;
-                    continue;
+                    printLogMsg("Allocate vm: "+vm.getId()+" Ram: "+vm.getRam() + " on host: "+host.getId());
+                    i -= 1;
+                } else {
+                    Log.printLine("Cannot allocate vm_ram:"+vm.getRam()+" mips:"+vm.getMips()+
+                    " On host:"+host.getRamProvisioner().getAvailableRam() +" pes:"+host.getNumberOfFreePes() );
                 }
             }
-
+            Log.printLine("Left host: "+host.getId()+" With ram: "+host.getRamProvisioner().getAvailableRam() +" pes:"+host.getNumberOfFreePes());
         }
         if(vmsVector.size() == 0) {
             printLogMsg("All vms successfully allocated!");

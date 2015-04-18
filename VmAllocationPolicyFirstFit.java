@@ -53,14 +53,13 @@ public class VmAllocationPolicyFirstFit extends VmAllocationPolicy {
 
     @Override
     public boolean allocateHostForVm(Vm vm) {
-        printLogMsg("Allocate host for vm");
         int idx = 0;
         for (Host host : getHostList()) {
             idx++;
             if(host.isSuitableForVm(vm)) {
                 boolean result = host.vmCreate(vm);
                 if(result) {
-                    printLogMsg("Vm created successfuly on " + idx);
+                    printLogMsg("Vm:"+vm.getId()+ "Ram: "+vm.getRam() +" Allocated on " + host.getId());
                     getVmTable().put(vm.getUid(), host);
                     return true;
                 } else {

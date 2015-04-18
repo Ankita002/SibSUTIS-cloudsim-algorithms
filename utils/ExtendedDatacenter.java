@@ -45,7 +45,6 @@ public class ExtendedDatacenter extends PowerDatacenter {
 
     @Override
     public void processEvent(SimEvent ev) {
-        Log.printLine("Extended datacenter: process event: "+ev.getTag());
         if (ev.getTag() == ExtendedDatacenterBrocker.ALLOCATE_VM_LIST_TAG) {
             ListAllocationPolicy policy = (ListAllocationPolicy)getVmAllocationPolicy();
             List<Vm> vmList = (List<Vm>)ev.getData();
@@ -78,14 +77,14 @@ public class ExtendedDatacenter extends PowerDatacenter {
             if (used > maximumUsedHostsCount) {
                 maximumUsedHostsCount = used;
             }
-            printLogMsg("Used hosts: "+ used);
+//            printLogMsg("Used hosts: "+ used);
         } else {
             super.processEvent(ev);
             int used = getHostList().size() - getUnusedHostsCount();
             if (used > maximumUsedHostsCount) {
                 maximumUsedHostsCount = used;
             }
-            printLogMsg("Used hosts: "+ used);
+//            printLogMsg("Used hosts: "+ used);
         }
 
     }
