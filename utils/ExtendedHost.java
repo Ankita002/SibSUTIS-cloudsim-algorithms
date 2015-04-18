@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ExtendedHost extends PowerHostUtilizationHistory {
     private long initialStorage;
-    private static final boolean isVmOwnsPes = false;
+    private static final boolean isVmOwnsPes = true;
     public ExtendedHost(int id,
                         RamProvisioner ramProvisioner,
                         BwProvisioner bwProvisioner,

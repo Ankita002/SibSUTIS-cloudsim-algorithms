@@ -69,7 +69,7 @@ public class MojosXmlParser {
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element eElement = (Element) nNode;
                 MojosTask task = new MojosTask();
-                Log.printLine("GUID: " + eElement.getAttribute("GUID"));
+//                Log.printLine("GUID: " + eElement.getAttribute("GUID"));
                 task.guid = eElement.getAttribute("GUID");
                 NodeList requestList = eElement.getElementsByTagName("REQUEST");
 
