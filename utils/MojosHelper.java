@@ -28,7 +28,7 @@ public class MojosHelper extends ExtendedHelper {
                     vmType = (vmType % ExtendedConstants.VM_TYPES - 1);
                 }
                 //Vm count in batch == nodes count in request
-                for (int i = 0; i < taskList.get(taskNumber).requstList.get(0).nodes; i++) {
+                for (int i = 0; vmsCreated < vmsNumber && i < taskList.get(taskNumber).requstList.get(0).nodes; i++) {
                     Log.print("Create task of type: " + vmType + "\n");
                     vms.add(new PowerVm(
                             vmsCreated,
