@@ -87,8 +87,8 @@ public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements Lis
                     printLogMsg("Allocate vm: "+vm.getId()+" Ram: "+vm.getRam() + " on host: "+host.getId());
                     i -= 1;
                 } else {
-                    Log.printLine("Cannot allocate vm_ram:"+vm.getRam()+" mips:"+vm.getMips()+
-                    " On host:"+host.getRamProvisioner().getAvailableRam() +" pes:"+host.getNumberOfFreePes() );
+                    //Log.printLine("Cannot allocate vm_ram:"+vm.getRam()+" mips:"+vm.getMips()+
+                    //" On host:"+host.getRamProvisioner().getAvailableRam() +" pes:"+host.getNumberOfFreePes() );
                 }
             }
             Log.printLine("Left host: "+host.getId()+" With ram: "+host.getRamProvisioner().getAvailableRam() +" pes:"+host.getNumberOfFreePes());
