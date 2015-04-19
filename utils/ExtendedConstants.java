@@ -10,7 +10,7 @@ import org.cloudbus.cloudsim.power.models.PowerModel;
  */
 public class ExtendedConstants extends Constants {
     public final static int CLOUDLET_LENGTH	= 50000 * (int) SIMULATION_LIMIT;
-    public final static int HOST_TYPES	 = 1;
+    public final static int HOST_TYPES	 = 2;
     public final static int[] HOST_MIPS	 = { 2400, 2100 };
     public final static int[] HOST_PES	 = { 8, 16};
     public final static int[] HOST_RAM	 = { 49152,16384 };

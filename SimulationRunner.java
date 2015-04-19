@@ -9,11 +9,16 @@
 
 package org.cloudbus.cloudsim.examples.SibSUTIS;
 
+import java.io.*;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import com.sun.istack.internal.Nullable;
 import javafx.util.Pair;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -37,87 +42,152 @@ import org.cloudbus.cloudsim.power.*;
 */
 public class SimulationRunner {
 
-
-    public static void main(String[] args) throws IOException {
-        int NUMBER_OF_HOSTS = 100;
-        int MIN_VMS = 100;
-        int SIMULATION_STEP = 100;
-        int MAX_VMS = 1000;
-
-        List<Pair<Double, Integer>> resultList = new ArrayList<Pair<Double, Integer>>();
-        for (int i = MIN_VMS; i <= MAX_VMS; i += SIMULATION_STEP) {
-            String experimentName = "random_npa";
-            String outputFolder = "output";
-
-            int NUMBER_OF_VMS = i;
-            Log.setDisabled(!Constants.ENABLE_OUTPUT);
-            Log.printLine("Starting " + experimentName);
-
-
-            try {
-                CloudSim.init(1, Calendar.getInstance(), false);
-
-//            ExtendedDatacenterBrocker broker =  ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_LIST);
-                ExtendedDatacenterBrocker broker = ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_STANDART);
-                int brokerId = broker.getId();
-                Log.printLine("brocker id: " + brokerId);
-
-                List<Cloudlet> cloudletList = RandomHelper.createCloudletList(
-                        brokerId,
-                        NUMBER_OF_VMS);
-
-//                List<Vm> vmList = ExtendedHelper.createVmList(brokerId, cloudletList.size());
-                List<Vm> vmList = MojosHelper.createVmList(brokerId, cloudletList.size());
-                List<PowerHost> hostList = ExtendedHelper.createHostList(NUMBER_OF_HOSTS);
-                ExtendedDatacenter datacenter = (ExtendedDatacenter) ExtendedHelper.createDatacenter(
-                        "Datacenter",
-                        ExtendedDatacenter.class,
-                        hostList,
-//                    new VmAllocationPolicyRandom(hostList)
-//                    new VmAllocationPolicyRoundRobin(hostList)
-                    new VmAllocationPolicyFirstFit(hostList)
-//                    new VmAllocationPolicyNBG(hostList)
-//                    new VmAllocationPolicyFFDProd(hostList)
-//                    new VmAllocationPolicyFFDSum(hostList)
-//                        new VmAllocationPolicyDotProduct(hostList)
-                );
-
-                datacenter.setDisableMigrations(true);
-
-                broker.submitVmList(vmList);
-                broker.submitCloudletList(cloudletList);
-
-                CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
-                double lastClock = CloudSim.startSimulation();
-
-                List<Cloudlet> newList = broker.getCloudletReceivedList();
-                Log.printLine("Received " + newList.size() + " cloudlets");
-
-                CloudSim.stopSimulation();
-
-//                ExtendedHelper.printResults(
-//                        datacenter,
-//                        vmList,
-//                        lastClock,
-//                        experimentName,
-//                        Constants.OUTPUT_CSV,
-//                        outputFolder);
-
-//                Log.printLine("Maximum used hosts: " + datacenter.getMaximumUsedHostsCount());
-                double energy = datacenter.getPower() / (3600 * 1000);
-                resultList.add(new Pair<Double, Integer>(energy,datacenter.getMaximumUsedHostsCount()));
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.printLine("The simulation has been terminated due to an unexpected error");
-                System.exit(0);
-            }
+    public static class SimulationConfiguration {
+        //Number of hosts in your simulation
+        public int numberOfHosts;
+        public int minVmsInSimulation;
+        public int maxVmsInSimulation;
+        public int simulationStep;
+        public boolean useMojosData = false;
+        public String outputPath = "/tmp/cloudsim/results";
+        public List <Class<? extends VmAllocationPolicy>> vmAllocationPolicies;
+        public List <String> inputFiles;
+        public boolean isValid() {
+            return (numberOfHosts > 0
+                    && minVmsInSimulation < maxVmsInSimulation
+                    && maxVmsInSimulation > 0
+                    && simulationStep > 0
+                    && vmAllocationPolicies != null
+                    && vmAllocationPolicies.size() > 0
+                    && inputFiles != null
+                    && inputFiles.size() > 0
+                    && outputPath.length() > 0
+            );
         }
-        for (int i = MIN_VMS, j = 0; i <= MAX_VMS && j < resultList.size(); i += SIMULATION_STEP, j++) {
-            Log.printLine("Res for vms["+i+"]: \n"+
-            "Energy consumption:  "+resultList.get(j).getKey()+" kWh\n"+
-            "Used hosts: "+resultList.get(j).getValue()+"\n");
+
+    }
+    public static void doSimulationStep(@Nullable String inputFile, int stepNumber, SimulationConfiguration config) {
+        File outputFolder = new File(config.outputPath + "/simulation_"+stepNumber);
+        if (!outputFolder.exists()) {
+            outputFolder.mkdirs();
+        }
+
+        for (Class<? extends VmAllocationPolicy> vmallocationPolicyClass : config.vmAllocationPolicies) {
+            List<Pair<Double, Integer>> resultList = new ArrayList<Pair<Double, Integer>>();
+            PrintWriter logFileWriter = null;
+            try {
+                logFileWriter = new PrintWriter(
+                        outputFolder.getAbsolutePath() + "/" +
+                                vmallocationPolicyClass.getSimpleName() + ".txt");
+            } catch (FileNotFoundException e) {
+                new RuntimeException("Cannot open log file: " + e.getMessage());
+            }
+            for (int i = config.minVmsInSimulation;
+                 i <= config.maxVmsInSimulation;
+                 i += config.simulationStep) {
+                //Simulation body
+                VmAllocationPolicy policy = null;
+                List<PowerHost> hostList = null;
+                ExtendedDatacenterBrocker broker = null;
+                List<Cloudlet> cloudletList = null;
+                List<Vm> vmList = null;
+                try {
+                    int numberOfVms = i;
+                    CloudSim.init(1, Calendar.getInstance(), false);
+                    if (vmallocationPolicyClass == VmAllocationPolicyFFDProd.class
+                            || vmallocationPolicyClass == VmAllocationPolicyFFDSum.class) {
+                        broker = ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_LIST);
+                    } else {
+                        broker = ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_STANDART);
+                    }
+                    int brokerId = broker.getId();
+
+                    cloudletList = RandomHelper.createCloudletList(
+                            brokerId,
+                            numberOfVms);
+                    if (inputFile == null) {
+                        vmList = ExtendedHelper.createVmList(brokerId, cloudletList.size());
+                    } else {
+                        vmList = MojosHelper.createVmList(brokerId, cloudletList.size(), inputFile);
+                    }
+
+                    hostList = ExtendedHelper.createHostList(config.numberOfHosts);
+
+                    Constructor<?> cons = vmallocationPolicyClass.getConstructor(List.class);
+                    policy = (VmAllocationPolicy) cons.newInstance(hostList);
+
+                    ExtendedDatacenter datacenter = (ExtendedDatacenter) ExtendedHelper.createDatacenter(
+                            "Datacenter",
+                            ExtendedDatacenter.class,
+                            hostList,
+                            policy);
+                    datacenter.setDisableMigrations(true);
+
+                    broker.submitVmList(vmList);
+                    broker.submitCloudletList(cloudletList);
+
+                    CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
+                    double lastClock = CloudSim.startSimulation();
+
+                    double energy = datacenter.getPower() / (3600 * 1000);
+                    resultList.add(new Pair<Double, Integer>(energy, datacenter.getMaximumUsedHostsCount()));
+
+                } catch (Exception e) {
+                    Log.printLine("Sumulation has been terminated due to unexpected exception: " +
+                            e.getMessage());
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+            for (int i = config.minVmsInSimulation, j = 0;
+                 i <= config.maxVmsInSimulation && j < resultList.size();
+                 i += config.simulationStep, j++) {
+                Log.printLine("Res for vms[" + i + "]: \n" +
+                        "Energy consumption:  " + resultList.get(j).getKey() + " kWh\n" +
+                        "Used hosts: " + resultList.get(j).getValue() + "\n");
+                logFileWriter.println("["+i+"]: "+resultList.get(j).getKey()+" KWh;"
+                + " hosts: "+resultList.get(j).getValue());
+            }
+            logFileWriter.close();
         }
     }
+    public static void startSimulation (SimulationConfiguration config) {
+        if (!config.isValid()) {
+            throw new RuntimeException("Simulation config isn't valid");
+        }
+        if (config.useMojosData) {
+            for (int i = 0; i < config.inputFiles.size(); i++)
+                doSimulationStep(config.inputFiles.get(i), i, config);
+        } else {
+            doSimulationStep(null, 0, config);
+        }
 
+    }
+
+    public static void main(String[] args) throws IOException {
+        SimulationConfiguration config = new SimulationConfiguration();
+        config.numberOfHosts = 250;
+        config.minVmsInSimulation = 100;
+        config.simulationStep = 100;
+        config.maxVmsInSimulation = 1000;
+
+        //Specify your input files here
+        config.useMojosData = true;
+        config.inputFiles = Arrays.asList(
+                "/tmp/mojos/test1.xml",
+                "/tmp/mojos/test2.xml",
+                "/tmp/mojos/test3.xml"
+        );
+        //Specify vm allocation policies which you're want to use
+        config.vmAllocationPolicies = Arrays.asList(
+                VmAllocationPolicyRandom.class,
+                VmAllocationPolicyRoundRobin.class,
+                VmAllocationPolicyFirstFit.class,
+                VmAllocationPolicyNBG.class,
+                VmAllocationPolicyFFDProd.class,
+                VmAllocationPolicyFFDSum.class,
+                VmAllocationPolicyDotProduct.class
+        );
+        startSimulation(config);
+    }
 }

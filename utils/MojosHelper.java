@@ -12,10 +12,9 @@ import java.util.logging.Logger;
 
 public class MojosHelper extends ExtendedHelper {
     private static boolean enableBatchNodes = true;
-    public static List<Vm> createVmList(int brokerId, int vmsNumber) {
+    public static List<Vm> createVmList(int brokerId, int vmsNumber, String inputFile) {
         List<Vm> vms = new ArrayList<Vm>();
-        //Do you know better place?
-        List<MojosXmlParser.MojosTask> taskList = MojosXmlParser.parse("/tmp/mojos/test.xml");
+        List<MojosXmlParser.MojosTask> taskList = MojosXmlParser.parse(inputFile);
         if (taskList.size() < vmsNumber) {
             throw new RuntimeException("Mojos taskList size less than vms to create!");
         }
