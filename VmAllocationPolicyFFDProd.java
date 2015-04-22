@@ -9,9 +9,7 @@ import org.cloudbus.cloudsim.VmAllocationPolicy;
 
 import java.util.*;
 
-/**
- * Created by andrey on 30.01.15.
- */
+
 public class VmAllocationPolicyFFDProd extends VmAllocationPolicy implements ListAllocationPolicy{
     /** The vm table. */
     private Map<String, Host> vmTable;

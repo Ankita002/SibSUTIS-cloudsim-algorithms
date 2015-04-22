@@ -41,6 +41,7 @@ import org.cloudbus.cloudsim.power.*;
 7. Norm-based Greedy
 */
 public class SimulationRunner {
+    static List<List<Pair<Double,Integer>>> totalResultList;
 
     public static class SimulationConfiguration {
         //Number of hosts in your simulation
@@ -54,7 +55,7 @@ public class SimulationRunner {
         public List <String> inputFiles;
         public boolean isValid() {
             return (numberOfHosts > 0
-                    && minVmsInSimulation < maxVmsInSimulation
+                    && minVmsInSimulation <= maxVmsInSimulation
                     && maxVmsInSimulation > 0
                     && simulationStep > 0
                     && vmAllocationPolicies != null
@@ -71,10 +72,11 @@ public class SimulationRunner {
         if (!outputFolder.exists()) {
             outputFolder.mkdirs();
         }
-
+        int policyIndex = -1;
         for (Class<? extends VmAllocationPolicy> vmallocationPolicyClass : config.vmAllocationPolicies) {
             List<Pair<Double, Integer>> resultList = new ArrayList<Pair<Double, Integer>>();
             PrintWriter logFileWriter = null;
+            policyIndex++;
             try {
                 logFileWriter = new PrintWriter(
                         outputFolder.getAbsolutePath() + "/" +
@@ -82,9 +84,9 @@ public class SimulationRunner {
             } catch (FileNotFoundException e) {
                 new RuntimeException("Cannot open log file: " + e.getMessage());
             }
-            for (int i = config.minVmsInSimulation;
+            for (int i = config.minVmsInSimulation, numbeOfStep = 0;
                  i <= config.maxVmsInSimulation;
-                 i += config.simulationStep) {
+                 i += config.simulationStep, numbeOfStep++) {
                 //Simulation body
                 VmAllocationPolicy policy = null;
                 List<PowerHost> hostList = null;
@@ -95,7 +97,8 @@ public class SimulationRunner {
                     int numberOfVms = i;
                     CloudSim.init(1, Calendar.getInstance(), false);
                     if (vmallocationPolicyClass == VmAllocationPolicyFFDProd.class
-                            || vmallocationPolicyClass == VmAllocationPolicyFFDSum.class) {
+                        || vmallocationPolicyClass == VmAllocationPolicyFFDSum.class
+                        || vmallocationPolicyClass == VmAllocationPolicyNBG.class ) {
                         broker = ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_LIST);
                     } else {
                         broker = ExtendedHelper.createExtendedBrocker(ExtendedDatacenterBrocker.VM_ALLOCATION_MODE_STANDART);
@@ -131,7 +134,9 @@ public class SimulationRunner {
 
                     double energy = datacenter.getPower() / (3600 * 1000);
                     resultList.add(new Pair<Double, Integer>(energy, datacenter.getMaximumUsedHostsCount()));
-
+                    Pair<Double, Integer> pair = totalResultList.get(policyIndex).get(numbeOfStep);
+                    totalResultList.get(policyIndex).set(numbeOfStep, new Pair<Double, Integer>(energy + pair.getKey(),
+                            datacenter.getMaximumUsedHostsCount() + pair.getValue()));
                 } catch (Exception e) {
                     Log.printLine("Sumulation has been terminated due to unexpected exception: " +
                             e.getMessage());
@@ -145,8 +150,8 @@ public class SimulationRunner {
                 Log.printLine("Res for vms[" + i + "]: \n" +
                         "Energy consumption:  " + resultList.get(j).getKey() + " kWh\n" +
                         "Used hosts: " + resultList.get(j).getValue() + "\n");
-                logFileWriter.println("["+i+"]: "+resultList.get(j).getKey()+" KWh;"
-                + " hosts: "+resultList.get(j).getValue());
+                logFileWriter.println("[" + i + "]: " + resultList.get(j).getKey() + " KWh;"
+                        + " hosts: " + resultList.get(j).getValue());
             }
             logFileWriter.close();
         }
@@ -155,13 +160,49 @@ public class SimulationRunner {
         if (!config.isValid()) {
             throw new RuntimeException("Simulation config isn't valid");
         }
+        totalResultList = new ArrayList<List<Pair<Double,Integer>>>();
+        for (int i = 0 ;i < config.vmAllocationPolicies.size(); i++) {
+            List<Pair<Double, Integer>> list = new ArrayList<Pair<Double,Integer>>();
+            for(int j = config.minVmsInSimulation;
+                j <= config.maxVmsInSimulation;
+                j += config.simulationStep) {
+                list.add(new Pair<Double,Integer>(new Double(0), new Integer(0)));
+            }
+            totalResultList.add(list);
+        }
         if (config.useMojosData) {
             for (int i = 0; i < config.inputFiles.size(); i++)
                 doSimulationStep(config.inputFiles.get(i), i, config);
         } else {
             doSimulationStep(null, 0, config);
         }
+       saveAverage(config);
 
+    }
+    public static void saveAverage(SimulationConfiguration config) {
+        File outputFolder = new File(config.outputPath + "/simulation_average");
+        if (!outputFolder.exists()) {
+            outputFolder.mkdirs();
+        }
+        int i = -1;
+        for (Class<? extends VmAllocationPolicy> vmallocationPolicyClass : config.vmAllocationPolicies) {
+            i++;
+            PrintWriter logFileWriter = null;
+            try {
+                logFileWriter = new PrintWriter(
+                        outputFolder.getAbsolutePath() + "/" +
+                                vmallocationPolicyClass.getSimpleName() + ".txt");
+            } catch (FileNotFoundException e) {
+                new RuntimeException("Cannot open log file: " + e.getMessage());
+            }
+            for (int j = config.minVmsInSimulation, numberOfStep = 0;
+                 j <= config.maxVmsInSimulation;
+                 j += config.simulationStep, numberOfStep++) {
+                logFileWriter.println("[" + i + "]: " + totalResultList.get(i).get(numberOfStep).getKey()/config.inputFiles.size() + " KWh;"
+                        + " hosts: " + 1.0*totalResultList.get(i).get(numberOfStep).getValue()/config.inputFiles.size());
+            }
+            logFileWriter.close();
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -173,6 +214,7 @@ public class SimulationRunner {
 
         //Specify your input files here
         config.useMojosData = true;
+
         config.inputFiles = Arrays.asList(
                 "/tmp/mojos/test1.xml",
                 "/tmp/mojos/test2.xml",
